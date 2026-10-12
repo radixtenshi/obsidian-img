@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "minAppVersion": "1.4.0",
   "description": "Selective attachment cleanup: detects images unlinked from a note and offers to send them to the trash.",
-  "author": "Radix",
+  "author": "R4D1X",
   "authorUrl": "https://github.com/radixtenshi",
   "isDesktopOnly": false
 }
