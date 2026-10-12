@@ -1,46 +1,46 @@
-# Obsidian Img — Limpieza selectiva de adjuntos
+# Obsidian Img — Selective attachment cleanup
 
-Plugin de Obsidian que detecta imágenes y adjuntos que quedaron **desvinculados** de una nota al editarla, y te ofrece enviarlos a la papelera — respetando la configuración de papelera de Obsidian y dejando trazabilidad de cada acción.
+Obsidian plugin that detects images and attachments that became **unlinked** from a note while you edit it, and offers to send them to the trash — respecting Obsidian's trash settings and keeping a trace log of every action.
 
-## Características
+## Features
 
-- **Detección en vivo:** escucha cambios en los `.md` del vault (con debounce de 1.5 s para no molestar mientras tipeas) y compara las referencias antes/después.
-- **Formatos soportados:** `![](ruta)`, `![[archivo]]`, `[[archivo]]` y links Markdown. URLs externas ignoradas.
-- **Solo carpetas vigiladas:** por defecto `.img/` (configurable en Settings); cualquier adjunto fuera de esas carpetas se ignora.
-- **Backlinks:** si otra nota todavía referencia el archivo, **no se ofrece** para borrar.
-- **Modal en lote:** una sola ventana lista los desvinculados con checkbox por archivo y los botones **Eliminar** / **Conservar**.
-- **"No volver a preguntar":** persiste la última acción como política permanente (eliminar siempre / conservar siempre). Se resetea desde Settings.
-- **Papelera de Obsidian:** usa `fileManager.trashFile()` — nunca borra permanente contra la voluntad de la configuración del usuario.
-- **Log de trazabilidad:** JSONL con fecha, archivo, nota origen, destino y acción. Rotación con tope de 1000 entradas. Historial consultable desde un modal (abrir archivo / vaciar).
+- **Live detection:** listens for changes in the vault's `.md` files (with a 1.5 s debounce so it doesn't interrupt while you type) and compares attachments referenced before/after.
+- **Supported formats:** `![](path)`, `![[file]]`, `[[file]]` and Markdown links. External URLs are ignored.
+- **Watched folders only:** defaults to `.img/` (configurable in Settings); any attachment outside those folders is ignored.
+- **Backlinks:** if another note still references the file, it is **not offered** for deletion.
+- **Batch modal:** a single window lists the unlinked files with a checkbox per file and **Delete** / **Keep** buttons.
+- **"Don't ask again":** persists the last action as a permanent policy (always delete / always keep). Resettable from Settings.
+- **Obsidian's trash:** uses `fileManager.trashFile()` — never permanently deletes against the user's trash configuration.
+- **Trace log:** JSONL with date, file, source note, destination and action. Rotated with a 1000-entry cap. History viewable from a modal (open file / clear).
 
-## Instalación
+## Installation
 
-1. Crear la carpeta `.obsidian/plugins/obsidian-img/` dentro de tu vault.
-2. Copiar ahí `manifest.json` y `main.js` (ya vienen compilados en este repo).
-3. Reiniciar Obsidian → **Settings → Community plugins** → habilitar **Obsidian Img**.
+1. Create the folder `.obsidian/plugins/obsidian-img/` inside your vault.
+2. Copy `manifest.json` and `main.js` into it (already compiled in this repo).
+3. Restart Obsidian → **Settings → Community plugins** → enable **Obsidian Img**.
 
-## Configuración (Settings → Obsidian Img)
+## Configuration (Settings → Obsidian Img)
 
-| Setting | Descripción |
+| Setting | Description |
 |---|---|
-| Activar plugin | Enciende/apaga el monitoreo |
-| Carpetas vigiladas | Rutas separadas por coma (default `.img/`). Un nombre simple aplica a cualquier profundidad |
-| Acción permanente | Estado del "No volver a preguntar" + botón para volver a "Preguntar" |
-| Historial de trazabilidad | Abre el modal con el log de acciones |
+| Enable plugin | Turns monitoring on/off |
+| Watched folders | Comma-separated paths (default `.img/`). A bare name matches at any depth |
+| Permanent action | State of the "Don't ask again" policy + button to reset to "Ask" |
+| Trace history | Opens the modal with the action log |
 
-El log vive en `.obsidian/plugins/obsidian-img/data/appendix-log.jsonl`.
+The log lives in `.obsidian/plugins/obsidian-img/data/appendix-log.jsonl`.
 
-## Desarrollo
+## Development
 
-Requiere [Node.js](https://nodejs.org/) 18+.
+Requires [Node.js](https://nodejs.org/) 18+.
 
 ```bash
-npm install        # dependencias
-npm run build      # typecheck + bundle de producción → main.js
-npm run dev        # watch mode (rebuild automático)
+npm install        # dependencies
+npm run build      # typecheck + production bundle → main.js
+npm run dev        # watch mode (auto rebuild)
 ```
 
-### Estructura
+### Structure
 
 ```
 manifest.json
@@ -48,22 +48,22 @@ versions.json
 esbuild.config.mjs
 tsconfig.json
 src/
-  main.ts            # entrada: eventos, política, backlinks, papelera
+  main.ts            # entry: events, policy, backlinks, trash
   settings.ts        # PluginSettingTab
-  diff.ts            # parser de referencias + debounce + snapshot
-  log.ts             # log JSONL + rotación
-  modal-delete.ts    # modal de confirmación en lote
-  modal-history.ts   # modal de historial
+  diff.ts            # reference parser + debounce + snapshot
+  log.ts             # JSONL log + rotation
+  modal-delete.ts    # batch confirmation modal
+  modal-history.ts   # history modal
 docs/
   documento_de_lineamientos_para_el_desarrollo_del_plugin_de_obsidian.md
 ```
 
-## Fuera de alcance
+## Out of scope
 
-- Escaneo de archivos huérfanos (adjuntos sin referenciar en ninguna nota).
-- Notas Markdown vinculadas entre sí (solo adjuntos/imágenes).
+- Scanning for orphan files (attachments not referenced by any note).
+- Markdown notes linked to each other (attachments/images only).
 - Canvas.
 
-## Licencia
+## License
 
 MIT
