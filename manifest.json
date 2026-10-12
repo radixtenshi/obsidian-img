@@ -1,6 +1,6 @@
 {
-  "id": "obsidian-img",
-  "name": "Obsidian Img",
+  "id": "img-cleanup",
+  "name": "Img Cleanup",
   "version": "1.0.0",
   "minAppVersion": "1.4.0",
   "description": "Selective attachment cleanup: detects images unlinked from a note and offers to send them to the trash.",

@@ -1,4 +1,4 @@
-# Obsidian Img — Selective attachment cleanup
+# Img Cleanup — Selective attachment cleanup
 
 Obsidian plugin that detects images and attachments that became **unlinked** from a note while you edit it, and offers to send them to the trash — respecting Obsidian's trash settings and keeping a trace log of every action.
 
@@ -15,11 +15,11 @@ Obsidian plugin that detects images and attachments that became **unlinked** fro
 
 ## Installation
 
-1. Create the folder `.obsidian/plugins/obsidian-img/` inside your vault.
+1. Create the folder `.obsidian/plugins/img-cleanup/` inside your vault.
 2. Copy `manifest.json` and `main.js` into it (already compiled in this repo).
-3. Restart Obsidian → **Settings → Community plugins** → enable **Obsidian Img**.
+3. Restart Obsidian → **Settings → Community plugins** → enable **Img Cleanup**.
 
-## Configuration (Settings → Obsidian Img)
+## Configuration (Settings → Img Cleanup)
 
 | Setting | Description |
 |---|---|
@@ -28,7 +28,7 @@ Obsidian plugin that detects images and attachments that became **unlinked** fro
 | Permanent action | State of the "Don't ask again" policy + button to reset to "Ask" |
 | Trace history | Opens the modal with the action log |
 
-The log lives in `.obsidian/plugins/obsidian-img/data/appendix-log.jsonl`.
+The log lives in `.obsidian/plugins/img-cleanup/data/appendix-log.jsonl`.
 
 ## Development
 

@@ -2,7 +2,7 @@ import { normalizePath, TFile } from "obsidian";
 import type ObsidianImgPlugin from "./main";
 
 const DEBOUNCE_MS = 1500;
-const SNAP_KEY = "obsidian-img:snapshots";
+const SNAP_KEY = "img-cleanup:snapshots";
 const EXTERNAL_URL = /^(https?|data|mailto|app):/i;
 
 export class AttachmentTracker {

@@ -20,7 +20,7 @@ export class HistoryModal extends Modal {
       const when = new Date(e.ts).toLocaleString();
       container.createEl("div", {
         text: `${when} — ${ACTION_LABEL[e.action]}: ${e.file} (origen: ${e.source}) → ${e.dest}`,
-        cls: "obsidian-img-log-entry",
+        cls: "img-cleanup-log-entry",
       });
     }
 

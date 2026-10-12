@@ -37,7 +37,7 @@ Este documento establece las directrices técnicas y funcionales para el desarro
 - Se debe utilizar `app.fileManager.trashFile(file)`, que respeta la configuración global de papelera de Obsidian (papelera interna o papelera del sistema, según los ajustes globales de la bóveda del usuario).
 
 #### 2.5. Registro de Trazabilidad (Log / Auditoría)
-- El plugin debe mantener un registro (log) persistente en formato **JSONL** en `.obsidian/plugins/<obsidian-img>/data/appendix-log.jsonl`.
+- El plugin debe mantener un registro (log) persistente en formato **JSONL** en `.obsidian/plugins/<img-cleanup>/data/appendix-log.jsonl`.
 - El registro debe almacenar como mínimo los siguientes campos por cada evento:
   - **Fecha y hora** exacta de la acción.
   - **Nombre del archivo** eliminado/conservado.
@@ -54,7 +54,7 @@ Este documento establece las directrices técnicas y funcionales para el desarro
 - **Framework / API:** Utilizar la API oficial de Obsidian (`obsidian`).
 - **Lenguaje:** TypeScript compatible con el entorno de ejecución de Obsidian (escritorio y móvil).
 - **Idioma de la UI:** Español.
-- **Identificador interno del plugin:** `obsidian-img`.
+- **Identificador interno del plugin:** `img-cleanup` (renombrado de `obsidian-img`: el catálogo de comunidad prohíbe `obsidian` en el ID y en el name).
 - **Gestión de Eventos:** 
   - Registrar eventos mediante `this.registerEvent(this.app.vault.on('modify', ...))`.
   - Debounce de ~1.5 s + snapshot por archivo en caché en memoria (persistido en `localStorage`) para evitar falsos positivos durante la escritura rápida o redibujado del editor.

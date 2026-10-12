@@ -1,5 +1,5 @@
 {
-  "name": "obsidian-img",
+  "name": "img-cleanup",
   "version": "1.0.0",
   "description": "Limpieza selectiva de adjuntos desvinculados",
   "main": "main.js",
