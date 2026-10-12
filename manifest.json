@@ -1,0 +1,9 @@
+{
+  "id": "obsidian-img",
+  "name": "Obsidian Img",
+  "version": "1.0.0",
+  "minAppVersion": "1.4.0",
+  "description": "Limpieza selectiva de adjuntos: detecta imágenes desvinculadas de una nota y ofrece enviarlas a la papelera.",
+  "author": "Radix",
+  "isDesktopOnly": false
+}
