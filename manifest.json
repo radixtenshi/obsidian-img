@@ -1,7 +1,7 @@
 {
   "id": "img-cleanup",
   "name": "Img Cleanup",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "minAppVersion": "1.13.0",
   "description": "Selective attachment cleanup: detects images unlinked from a note and offers to send them to the trash.",
   "author": "R4D1X",

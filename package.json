@@ -1,6 +1,6 @@
 {
   "name": "img-cleanup",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Limpieza selectiva de adjuntos desvinculados",
   "main": "main.js",
   "scripts": {
