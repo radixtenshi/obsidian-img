@@ -11,6 +11,18 @@ export interface LogEntry {
 
 const MAX_ENTRIES = 1000;
 
+function isLogEntry(value: unknown): value is LogEntry {
+  if (typeof value !== "object" || value === null) return false;
+  const v = value as Partial<LogEntry>;
+  return (
+    typeof v.ts === "string" &&
+    typeof v.file === "string" &&
+    typeof v.source === "string" &&
+    typeof v.dest === "string" &&
+    (v.action === "delete" || v.action === "keep")
+  );
+}
+
 export class LogStore {
   readonly filePath: string;
 
@@ -33,21 +45,24 @@ export class LogStore {
   }
 
   async readAll(): Promise<LogEntry[]> {
+    let raw: string;
     try {
-      const raw = await this.adapter.read(this.filePath);
-      return raw
-        .split("\n")
-        .filter(Boolean)
-        .flatMap((l) => {
-          try {
-            return [JSON.parse(l) as LogEntry];
-          } catch {
-            return [];
-          }
-        });
+      raw = await this.adapter.read(this.filePath);
     } catch {
       return [];
     }
+    const entries: LogEntry[] = [];
+    for (const line of raw.split("\n")) {
+      if (!line) continue;
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(line);
+      } catch {
+        continue;
+      }
+      if (isLogEntry(parsed)) entries.push(parsed);
+    }
+    return entries;
   }
 
   async clear(): Promise<void> {

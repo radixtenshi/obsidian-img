@@ -49,7 +49,7 @@ var HistoryModal = class extends import_obsidian.Modal {
     }
     for (const e of entries) {
       const when = new Date(e.ts).toLocaleString();
-      container.createEl("div", {
+      container.createDiv({
         text: `${when} \u2014 ${ACTION_LABEL[e.action]}: ${e.file} (origen: ${e.source}) \u2192 ${e.dest}`,
         cls: "img-cleanup-log-entry"
       });
@@ -57,7 +57,7 @@ var HistoryModal = class extends import_obsidian.Modal {
     new import_obsidian.Setting(this.contentEl).addButton(
       (b) => b.setButtonText("Abrir archivo").onClick(() => void this.openLogFile())
     ).addButton(
-      (b) => b.setButtonText("Vaciar").setWarning().onClick(async () => {
+      (b) => b.setButtonText("Vaciar").setDestructive().onClick(async () => {
         await this.plugin.log.clear();
         new import_obsidian.Notice("Historial vaciado.");
         this.close();
@@ -99,31 +99,37 @@ var ObsidianImgSettingTab = class extends import_obsidian2.PluginSettingTab {
     super(app, plugin);
     this.plugin = plugin;
   }
-  display() {
-    const { containerEl } = this;
-    containerEl.empty();
-    new import_obsidian2.Setting(containerEl).setName("Activar plugin").setDesc("Escuchar cambios en las notas para detectar adjuntos desvinculados.").addToggle(
-      (t) => t.setValue(this.plugin.settings.enabled).onChange(async (v) => {
-        this.plugin.settings.enabled = v;
-        await this.plugin.saveSettings();
-      })
-    );
-    new import_obsidian2.Setting(containerEl).setName("Carpetas vigiladas").setDesc("Rutas separadas por coma donde viven los adjuntos. Un nombre simple (ej. .img/) aplica a cualquier profundidad.").addText(
-      (t) => t.setValue(this.plugin.settings.watchedFolders).onChange(async (v) => {
-        this.plugin.settings.watchedFolders = v;
-        await this.plugin.saveSettings();
-      })
-    );
-    new import_obsidian2.Setting(containerEl).setName("Acci\xF3n permanente").setDesc("Estado del checkbox \xABNo volver a preguntar\xBB del modal.").addText((t) => t.setValue(POLICY_LABEL[this.plugin.settings.policy]).setDisabled(true)).addButton(
-      (b) => b.setButtonText("Volver a preguntar").onClick(async () => {
-        this.plugin.settings.policy = "ask";
-        await this.plugin.saveSettings();
-        this.display();
-      })
-    );
-    new import_obsidian2.Setting(containerEl).setName("Historial de trazabilidad").setDesc("Ver las acciones registradas por el plugin.").addButton(
-      (b) => b.setButtonText("Abrir historial").onClick(() => new HistoryModal(this.plugin).open())
-    );
+  getSettingDefinitions() {
+    return [
+      {
+        name: "Activar plugin",
+        desc: "Escuchar cambios en las notas para detectar adjuntos desvinculados.",
+        control: { type: "toggle", key: "enabled" }
+      },
+      {
+        name: "Carpetas vigiladas",
+        desc: "Rutas separadas por coma donde viven los adjuntos. Un nombre simple (ej. .img/) aplica a cualquier profundidad.",
+        control: { type: "text", key: "watchedFolders" }
+      },
+      {
+        name: "Acci\xF3n permanente",
+        desc: "Estado del checkbox \xABNo volver a preguntar\xBB del modal.",
+        render: (setting) => {
+          setting.addText((t) => t.setValue(POLICY_LABEL[this.plugin.settings.policy]).setDisabled(true)).addButton(
+            (b) => b.setButtonText("Volver a preguntar").onClick(async () => {
+              this.plugin.settings.policy = "ask";
+              await this.plugin.saveSettings();
+              this.update();
+            })
+          );
+        }
+      },
+      {
+        name: "Historial de trazabilidad",
+        desc: "Ver las acciones registradas por el plugin.",
+        action: () => new HistoryModal(this.plugin).open()
+      }
+    ];
   }
 };
 
@@ -187,15 +193,22 @@ var AttachmentTracker = class {
   }
   loadSnapshots() {
     try {
-      const raw = localStorage.getItem(SNAP_KEY);
-      return raw ? JSON.parse(raw) : {};
+      const raw = this.plugin.app.loadLocalStorage(SNAP_KEY);
+      if (typeof raw === "object" && raw !== null)
+        return raw;
+      if (typeof raw === "string") {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed === "object" && parsed !== null)
+          return parsed;
+      }
+      return {};
     } catch (e) {
       return {};
     }
   }
   persistSnapshots() {
     try {
-      localStorage.setItem(SNAP_KEY, JSON.stringify(this.snapshots));
+      this.plugin.app.saveLocalStorage(SNAP_KEY, this.snapshots);
     } catch (e) {
     }
   }
@@ -249,6 +262,12 @@ function matchesWatched(path, folder) {
 // src/log.ts
 var import_obsidian4 = require("obsidian");
 var MAX_ENTRIES = 1e3;
+function isLogEntry(value) {
+  if (typeof value !== "object" || value === null)
+    return false;
+  const v = value;
+  return typeof v.ts === "string" && typeof v.file === "string" && typeof v.source === "string" && typeof v.dest === "string" && (v.action === "delete" || v.action === "keep");
+}
 var LogStore = class {
   constructor(plugin) {
     this.plugin = plugin;
@@ -267,18 +286,26 @@ var LogStore = class {
     await this.writeAll(trimmed);
   }
   async readAll() {
+    let raw;
     try {
-      const raw = await this.adapter.read(this.filePath);
-      return raw.split("\n").filter(Boolean).flatMap((l) => {
-        try {
-          return [JSON.parse(l)];
-        } catch (e) {
-          return [];
-        }
-      });
+      raw = await this.adapter.read(this.filePath);
     } catch (e) {
       return [];
     }
+    const entries = [];
+    for (const line of raw.split("\n")) {
+      if (!line)
+        continue;
+      let parsed;
+      try {
+        parsed = JSON.parse(line);
+      } catch (e) {
+        continue;
+      }
+      if (isLogEntry(parsed))
+        entries.push(parsed);
+    }
+    return entries;
   }
   async clear() {
     await this.writeAll([]);
@@ -331,7 +358,7 @@ var DeleteModal = class extends import_obsidian5.Modal {
       (b) => b.setButtonText("Conservar").onClick(() => void this.finish("keep"))
     );
     buttons.addButton(
-      (b) => b.setButtonText("Eliminar").setWarning().onClick(() => void this.finish("delete"))
+      (b) => b.setButtonText("Eliminar").setDestructive().onClick(() => void this.finish("delete"))
     );
   }
   async finish(action) {
@@ -349,7 +376,8 @@ var DeleteModal = class extends import_obsidian5.Modal {
 var DEFAULT_WATCHED = [".img"];
 var ObsidianImgPlugin = class extends import_obsidian6.Plugin {
   async onload() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    const data = await this.loadData();
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, data != null ? data : {});
     this.log = new LogStore(this);
     this.tracker = new AttachmentTracker(this);
     this.registerEvent(
@@ -407,11 +435,17 @@ var ObsidianImgPlugin = class extends import_obsidian6.Plugin {
     new import_obsidian6.Notice(`${files.length} archivo(s) ${verb}.`);
   }
   hasOtherBacklinks(file) {
-    var _a, _b;
+    var _a;
     const cache = this.app.metadataCache;
     const res = (_a = cache.getBacklinksForFile) == null ? void 0 : _a.call(cache, file);
-    const map = res instanceof Map ? res : (_b = res == null ? void 0 : res.data) != null ? _b : /* @__PURE__ */ new Map();
-    return map.size > 0;
+    if (res instanceof Map)
+      return res.size > 0;
+    if (typeof res === "object" && res !== null) {
+      const data = res.data;
+      if (data instanceof Map)
+        return data.size > 0;
+    }
+    return false;
   }
   trashDestinationLabel() {
     var _a;

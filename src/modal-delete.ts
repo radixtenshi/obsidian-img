@@ -47,7 +47,7 @@ export class DeleteModal extends Modal {
       b.setButtonText("Conservar").onClick(() => void this.finish("keep"))
     );
     buttons.addButton((b) =>
-      b.setButtonText("Eliminar").setWarning().onClick(() => void this.finish("delete"))
+      b.setButtonText("Eliminar").setDestructive().onClick(() => void this.finish("delete"))
     );
   }
 

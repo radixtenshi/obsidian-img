@@ -12,7 +12,8 @@ export default class ObsidianImgPlugin extends Plugin {
   private tracker: AttachmentTracker;
 
   async onload() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    const data = (await this.loadData()) as Partial<ObsidianImgSettings> | null;
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, data ?? {});
     this.log = new LogStore(this);
     this.tracker = new AttachmentTracker(this);
 
@@ -77,12 +78,15 @@ export default class ObsidianImgPlugin extends Plugin {
 
   private hasOtherBacklinks(file: TFile): boolean {
     const cache = this.app.metadataCache as unknown as {
-      getBacklinksForFile?: (f: TFile) => { data?: Map<string, number> } | Map<string, number>;
+      getBacklinksForFile?: (f: TFile) => unknown;
     };
-    const res = cache.getBacklinksForFile?.(file);
-    const map: Map<string, number> =
-      res instanceof Map ? res : ((res as { data?: Map<string, number> })?.data ?? new Map());
-    return map.size > 0;
+    const res: unknown = cache.getBacklinksForFile?.(file);
+    if (res instanceof Map) return res.size > 0;
+    if (typeof res === "object" && res !== null) {
+      const data = (res as { data?: unknown }).data;
+      if (data instanceof Map) return data.size > 0;
+    }
+    return false;
   }
 
   private trashDestinationLabel(): string {

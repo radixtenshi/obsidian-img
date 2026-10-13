@@ -18,7 +18,7 @@ export class HistoryModal extends Modal {
     }
     for (const e of entries) {
       const when = new Date(e.ts).toLocaleString();
-      container.createEl("div", {
+      container.createDiv({
         text: `${when} — ${ACTION_LABEL[e.action]}: ${e.file} (origen: ${e.source}) → ${e.dest}`,
         cls: "img-cleanup-log-entry",
       });
@@ -31,7 +31,7 @@ export class HistoryModal extends Modal {
       .addButton((b) =>
         b
           .setButtonText("Vaciar")
-          .setWarning()
+          .setDestructive()
           .onClick(async () => {
             await this.plugin.log.clear();
             new Notice("Historial vaciado.");
@@ -48,6 +48,7 @@ export class HistoryModal extends Modal {
       return;
     }
     if (Platform.isDesktop && this.app.vault.adapter instanceof FileSystemAdapter) {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-call -- electron no se puede empaquetar; se resuelve en runtime
       const { shell } = require("electron") as { shell: { openPath(p: string): Promise<string> } };
       const full = normalizePath(
         `${this.app.vault.adapter.getBasePath()}/${path}`

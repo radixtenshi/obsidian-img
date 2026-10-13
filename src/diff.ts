@@ -62,8 +62,13 @@ export class AttachmentTracker {
 
   private loadSnapshots(): Record<string, string[]> {
     try {
-      const raw = localStorage.getItem(SNAP_KEY);
-      return raw ? (JSON.parse(raw) as Record<string, string[]>) : {};
+      const raw: unknown = this.plugin.app.loadLocalStorage(SNAP_KEY);
+      if (typeof raw === "object" && raw !== null) return raw as Record<string, string[]>;
+      if (typeof raw === "string") {
+        const parsed: unknown = JSON.parse(raw);
+        if (typeof parsed === "object" && parsed !== null) return parsed as Record<string, string[]>;
+      }
+      return {};
     } catch {
       return {};
     }
@@ -71,7 +76,7 @@ export class AttachmentTracker {
 
   private persistSnapshots() {
     try {
-      localStorage.setItem(SNAP_KEY, JSON.stringify(this.snapshots));
+      this.plugin.app.saveLocalStorage(SNAP_KEY, this.snapshots);
     } catch {
       // storage lleno o bloqueado: el snapshot en memoria sigue funcionando
     }
